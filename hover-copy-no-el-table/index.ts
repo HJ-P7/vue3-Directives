@@ -268,7 +268,7 @@ function showTooltip(el, text) {
   const tooltipHeight = tooltipRect.height
 
   // 位置计算：放在元素右侧，稍微重叠
-  let posX = rect.right + 50
+  let posX = rect.right
   let posY = rect.top + (rect.height - tooltipHeight) / 2
 
   // 边界检查
@@ -385,10 +385,23 @@ function copyText(text) {
         showSuccessMessage('复制成功')
       })
       .catch((err) => {
-        message.error(err)
+        message.error('复制失败')
       })
   } catch (err) {
-    message.error(err)
+    // 降级复制用传统的document.execCommand('copy')进行复制
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    document.body.appendChild(textArea)
+    textArea.select()
+
+    const successful = document.execCommand('copy')
+    document.body.removeChild(textArea)
+
+    if (successful) {
+      showSuccessMessage('复制成功')
+    } else {
+      message.error('向下兼容复制失败')
+    }
   }
 }
 
